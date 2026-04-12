@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {offerFeatures} from '../utils/mockData';
 import ButtonPrimary from '../components/ButtonPrimary';
 import ButtonOutline from '../components/ButtonOutline';
 import ProgressBar from '../components/ProgressBar';
@@ -113,14 +114,12 @@ const OfferDetailScreen = ({route, navigation}) => {
             <View style={styles.tabContent}>
               <Text style={styles.description}>{offer.description}</Text>
               <View style={styles.infoRow}>
-                <View style={styles.infoChip}>
-                  <Text style={styles.infoChipIcon}>📦</Text>
-                  <Text style={styles.infoChipText}>Livraison sous 24h</Text>
-                </View>
-                <View style={styles.infoChip}>
-                  <Text style={styles.infoChipIcon}>✅</Text>
-                  <Text style={styles.infoChipText}>Qualité garantie</Text>
-                </View>
+                {offerFeatures.map(feat => (
+                  <View key={feat.id} style={styles.infoChip}>
+                    <Text style={styles.infoChipIcon}>{feat.icon}</Text>
+                    <Text style={styles.infoChipText}>{feat.label}</Text>
+                  </View>
+                ))}
               </View>
             </View>
           )}
@@ -192,7 +191,7 @@ const OfferDetailScreen = ({route, navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: COLORS.background},
+  container: {flex: 1, overflow: 'hidden', backgroundColor: COLORS.background},
   scroll: {flex: 1},
   header: {
     backgroundColor: COLORS.primary,
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: 16,
   },
-  infoRow: {flexDirection: 'row', gap: 10},
+  infoRow: {flexDirection: 'row', flexWrap: 'wrap', gap: 10},
   infoChip: {
     flex: 1,
     flexDirection: 'row',

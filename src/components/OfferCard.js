@@ -61,10 +61,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: COLORS.black,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
     elevation: 3,
   },
   header: {

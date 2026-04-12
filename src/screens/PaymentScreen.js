@@ -13,13 +13,9 @@ import {
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {paymentMethods} from '../utils/mockData';
 import ButtonPrimary from '../components/ButtonPrimary';
 
-const METHODS = [
-  {id: 'wave', label: 'Wave', emoji: '💙', recommended: true},
-  {id: 'orange', label: 'Orange Money', emoji: '🟠', recommended: false},
-  {id: 'manuel', label: 'Paiement manuel', emoji: '💵', recommended: false},
-];
 
 /**
  * PaymentScreen — paiement d'un crédit (depuis SubscriptionsScreen ou OfferDetailScreen)
@@ -31,7 +27,7 @@ const PaymentScreen = ({route, navigation}) => {
   const title = subscription?.offerTitle || offer?.title || 'Commande';
   const dueDate = subscription?.nextDue || 'À définir';
 
-  const [selectedMethod, setSelectedMethod] = useState('wave');
+  const [selectedMethod, setSelectedMethod] = useState(paymentMethods.find(m => m.recommended)?.id || paymentMethods[0].id);
   const [customAmount, setCustomAmount] = useState(String(amount));
   const [loading, setLoading] = useState(false);
 
@@ -48,7 +44,7 @@ const PaymentScreen = ({route, navigation}) => {
       Alert.alert(
         '✅ Paiement confirmé',
         `${payAmount.toLocaleString('fr-FR')} CFA reçus via ${
-          METHODS.find(m => m.id === selectedMethod)?.label
+          paymentMethods.find(m => m.id === selectedMethod)?.label
         }`,
         [
           {
@@ -75,7 +71,7 @@ const PaymentScreen = ({route, navigation}) => {
         <View style={{width: 30}} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" style={styles.scroll}>
         <View style={styles.body}>
           {/* ——— Détail produit ——— */}
           <View style={styles.detailCard}>
@@ -116,7 +112,7 @@ const PaymentScreen = ({route, navigation}) => {
           {/* ——— Méthodes de paiement ——— */}
           <View style={styles.methodsCard}>
             <Text style={styles.sectionLabel}>Méthode de paiement</Text>
-            {METHODS.map(method => (
+            {paymentMethods.map(method => (
               <TouchableOpacity
                 key={method.id}
                 style={[
@@ -153,7 +149,7 @@ const PaymentScreen = ({route, navigation}) => {
             <View style={styles.detailRow}>
               <Text style={styles.detailKey}>Méthode</Text>
               <Text style={styles.detailVal}>
-                {METHODS.find(m => m.id === selectedMethod)?.label}
+                {paymentMethods.find(m => m.id === selectedMethod)?.label}
               </Text>
             </View>
           </View>
@@ -172,7 +168,8 @@ const PaymentScreen = ({route, navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: COLORS.background},
+  container: {flex: 1, overflow: 'hidden', backgroundColor: COLORS.background},
+  scroll: {flex: 1},
   header: {
     backgroundColor: COLORS.primary,
     flexDirection: 'row',

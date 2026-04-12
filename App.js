@@ -76,9 +76,9 @@ const AuthStack = () => (
 // ─── App principale ───────────────────────────────────────────────────────────
 export default function App() {
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={{flex: 1, overflow: 'hidden'}}>
       <AuthProvider>
-        <NavigationContainer>
+        <NavigationContainer style={{flex: 1, overflow: 'hidden'}}>
           <StatusBar backgroundColor={COLORS.primary} barStyle="light-content" />
           <AuthStack />
         </NavigationContainer>

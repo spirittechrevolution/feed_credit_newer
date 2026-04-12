@@ -10,17 +10,8 @@ import {
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {user} from '../utils/mockData';
+import {user, profileMenuItems} from '../utils/mockData';
 import {useAuth} from '../context/AuthContext';
-
-const MENU_ITEMS = [
-  {icon: '⚙️', label: 'Paramètres'},
-  {icon: '📊', label: 'Score de confiance'},
-  {icon: '🏆', label: 'Historique'},
-  {icon: '💳', label: 'Mes paiements'},
-  {icon: '📍', label: 'Mes adresses'},
-  {icon: '❓', label: 'Aide & Support'},
-];
 
 /**
  * ProfileScreen — profil utilisateur, statistiques, menu et déconnexion
@@ -68,7 +59,7 @@ const ProfileScreen = ({navigation}) => {
         <Text style={styles.memberSince}>Membre depuis {user.memberSince}</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
         {/* ——— Statistiques ——— */}
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
@@ -103,8 +94,12 @@ const ProfileScreen = ({navigation}) => {
 
         {/* ——— Menu ——— */}
         <View style={styles.menuCard}>
-          {MENU_ITEMS.map((item, i) => (
-            <TouchableOpacity key={i} style={styles.menuItem} activeOpacity={0.7}>
+          {profileMenuItems.map(item => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.menuItem}
+              activeOpacity={0.7}
+              onPress={() => item.screen && navigation.navigate(item.screen)}>
               <Text style={styles.menuIcon}>{item.icon}</Text>
               <Text style={styles.menuLabel}>{item.label}</Text>
               <Text style={styles.menuArrow}>›</Text>
@@ -124,7 +119,8 @@ const ProfileScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: COLORS.background},
+  container: {flex: 1, overflow: 'hidden', backgroundColor: COLORS.background},
+  scroll: {flex: 1},
   profileHeader: {
     backgroundColor: COLORS.primary,
     alignItems: 'center',

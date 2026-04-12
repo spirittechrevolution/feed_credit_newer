@@ -1,5 +1,63 @@
 // Données mockées pour la démonstration FeedCredit
 
+// ─── Catégories de produits ────────────────────────────────────────────────
+export const categories = [
+  {id: 'all',      label: 'Toutes',  emoji: '🛒'},
+  {id: 'Viande',   label: 'Viande',  emoji: '🥩'},
+  {id: 'Poisson',  label: 'Poisson', emoji: '🐟'},
+  {id: 'Volaille', label: 'Volaille',emoji: '🍗'},
+  {id: 'Mouton',   label: 'Mouton',  emoji: '🐑'},
+];
+
+// ─── Bannière promotionnelle (HomeScreen) ──────────────────────────────────
+export const banner = {
+  id: 1,
+  emoji: '🎉',
+  title: '-20% sur le boeuf !',
+  subtitle: 'Livraison gratuite ce weekend',
+  color: null, // null = couleur primaire
+};
+
+// ─── Méthodes de paiement (PaymentScreen) ─────────────────────────────────
+export const paymentMethods = [
+  {id: 'wave',   label: 'Wave',           emoji: '💙', recommended: true},
+  {id: 'orange', label: 'Orange Money',   emoji: '🟠', recommended: false},
+  {id: 'free',   label: 'Free Money',     emoji: '🟣', recommended: false},
+  {id: 'manuel', label: 'Paiement manuel',emoji: '💵',  recommended: false},
+];
+
+// ─── Menu profil (ProfileScreen) ─────────────────────────────────────────
+export const profileMenuItems = [
+  {id: 'settings',  icon: '⚙️',  label: 'Paramètres',          screen: null},
+  {id: 'score',     icon: '📊', label: 'Score de confiance',   screen: 'MyCredit'},
+  {id: 'history',   icon: '🏆', label: 'Historique',           screen: 'Subscriptions'},
+  {id: 'payments',  icon: '💳', label: 'Mes paiements',        screen: 'Subscriptions'},
+  {id: 'addresses', icon: '📍', label: 'Mes adresses',         screen: null},
+  {id: 'help',      icon: '❓', label: 'Aide & Support',       screen: null},
+];
+
+// ─── Caractéristiques d'une offre (OfferDetailScreen) ───────────────────
+export const offerFeatures = [
+  {id: 'delivery', icon: '📦', label: 'Livraison sous 24h'},
+  {id: 'quality',  icon: '✅', label: 'Qualité garantie'},
+  {id: 'halal',    icon: '🕌', label: 'Abattage halal'},
+  {id: 'local',    icon: '🌍', label: 'Producteurs locaux'},
+];
+
+// ─── Filtres abonnements (SubscriptionsScreen) ────────────────────────────
+export const subscriptionFilters = [
+  {id: 'en_cours', label: 'En cours'},
+  {id: 'terminee', label: 'Terminées'},
+  {id: 'annulee',  label: 'Annulées'},
+];
+
+// ─── Statuts abonnements ──────────────────────────────────────────────────
+export const subscriptionStatusConfig = {
+  en_cours: {label: 'En cours', color: '#1565C0', bg: '#E3F2FD'},
+  terminee: {label: 'Terminée', color: '#2E7D32', bg: '#E8F5E9'},
+  annulee:  {label: 'Annulée',  color: '#C62828', bg: '#FFEBEE'},
+};
+
 export const offers = [
   {
     id: 1,

@@ -79,7 +79,7 @@ const NotificationsScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: COLORS.background},
+  container: {flex: 1, overflow: 'hidden', backgroundColor: COLORS.background},
   header: {
     backgroundColor: COLORS.primary,
     flexDirection: 'row',

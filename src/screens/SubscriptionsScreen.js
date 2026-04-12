@@ -9,37 +9,21 @@ import {
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {subscriptions} from '../utils/mockData';
+import {subscriptions, subscriptionFilters, subscriptionStatusConfig} from '../utils/mockData';
 import ProgressBar from '../components/ProgressBar';
 import ButtonPrimary from '../components/ButtonPrimary';
-
-const FILTERS = ['En cours', 'Terminées', 'Annulées'];
-
-const STATUS_MAP = {
-  'En cours': 'en_cours',
-  Terminées: 'terminee',
-  Annulées: 'annulee',
-};
-
-const STATUS_LABELS = {
-  en_cours: {label: 'En cours', color: '#1565C0', bg: '#E3F2FD'},
-  terminee: {label: 'Terminée', color: '#2E7D32', bg: '#E8F5E9'},
-  annulee: {label: 'Annulée', color: '#C62828', bg: '#FFEBEE'},
-};
 
 /**
  * SubscriptionsScreen — liste des commandes filtrées par statut
  */
 const SubscriptionsScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
-  const [activeFilter, setActiveFilter] = useState('En cours');
+  const [activeFilter, setActiveFilter] = useState(subscriptionFilters[0].id);
 
-  const filtered = subscriptions.filter(
-    s => s.status === STATUS_MAP[activeFilter],
-  );
+  const filtered = subscriptions.filter(s => s.status === activeFilter);
 
   const renderItem = ({item}) => {
-    const config = STATUS_LABELS[item.status];
+    const config = subscriptionStatusConfig[item.status];
     const paidProgress = item.amount > 0 ? item.paid / item.amount : 0;
 
     return (
@@ -127,13 +111,13 @@ const SubscriptionsScreen = ({navigation}) => {
 
       {/* Filtres */}
       <View style={styles.filters}>
-        {FILTERS.map(f => (
+        {subscriptionFilters.map(f => (
           <TouchableOpacity
-            key={f}
-            style={[styles.filterTab, activeFilter === f && styles.filterTabActive]}
-            onPress={() => setActiveFilter(f)}>
-            <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
-              {f}
+            key={f.id}
+            style={[styles.filterTab, activeFilter === f.id && styles.filterTabActive]}
+            onPress={() => setActiveFilter(f.id)}>
+            <Text style={[styles.filterText, activeFilter === f.id && styles.filterTextActive]}>
+              {f.label}
             </Text>
           </TouchableOpacity>
         ))}
@@ -157,7 +141,7 @@ const SubscriptionsScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: COLORS.background},
+  container: {flex: 1, overflow: 'hidden', backgroundColor: COLORS.background},
   header: {
     backgroundColor: COLORS.primary,
     flexDirection: 'row',

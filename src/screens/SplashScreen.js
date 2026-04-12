@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, Animated, StatusBar} from 'react-native';
+import {View, Text, StyleSheet, Animated, StatusBar, Platform} from 'react-native';
 import COLORS from '../utils/colors';
 
 /**
@@ -14,7 +14,7 @@ const SplashScreen = ({navigation}) => {
       Animated.timing(opacity, {
         toValue: 0,
         duration: 500,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start(() => {
         navigation.replace('Onboarding');
       });

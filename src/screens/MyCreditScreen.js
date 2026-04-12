@@ -35,7 +35,7 @@ const MyCreditScreen = ({navigation}) => {
         <View style={{width: 30}} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
         {/* ——— Score ——— */}
         <View style={styles.scoreCard}>
           <View style={styles.scoreTopRow}>
@@ -150,7 +150,8 @@ const MyCreditScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: COLORS.background},
+  container: {flex: 1, overflow: 'hidden', backgroundColor: COLORS.background},
+  scroll: {flex: 1},
   header: {
     backgroundColor: COLORS.primary,
     flexDirection: 'row',

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import {DrawerContentScrollView} from '@react-navigation/drawer';
 import COLORS from '../utils/colors';
@@ -29,29 +30,35 @@ const DrawerContent = props => {
   const unreadCount = notifications.filter(n => n.unread).length;
 
   const handleLogout = () => {
-    Alert.alert(
-      'Déconnexion',
-      'Êtes-vous sûr de vouloir vous déconnecter ?',
-      [
-        {text: 'Annuler', style: 'cancel'},
-        {
-          text: 'Déconnecter',
-          style: 'destructive',
-          onPress: () => {
-            logout();
-            navigation.replace('Login');
-          },
-        },
-      ],
-    );
+    const doLogout = () => {
+      logout();
+    };
+    if (Platform.OS === 'web') {
+      if (window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+        doLogout();
+      }
+    } else {
+      Alert.alert(
+        'Déconnexion',
+        'Êtes-vous sûr de vouloir vous déconnecter ?',
+        [
+          {text: 'Annuler', style: 'cancel'},
+          {text: 'Déconnecter', style: 'destructive', onPress: doLogout},
+        ],
+      );
+    }
   };
 
   const navigate = screen => {
     if (!screen) {
-      Alert.alert('Bientôt disponible', 'Cette fonctionnalité arrive prochainement.');
+      if (Platform.OS === 'web') {
+        window.alert('Cette fonctionnalité arrive prochainement.');
+      } else {
+        Alert.alert('Bientôt disponible', 'Cette fonctionnalité arrive prochainement.');
+      }
       return;
     }
-    navigation.navigate(screen);
+    navigation.navigate('AppStack', {screen});
     navigation.closeDrawer();
   };
 

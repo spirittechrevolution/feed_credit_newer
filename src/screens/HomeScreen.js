@@ -10,23 +10,21 @@ import {
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {offers, subscriptions, notifications} from '../utils/mockData';
+import {offers, subscriptions, notifications, categories, banner} from '../utils/mockData';
 import OfferCard from '../components/OfferCard';
 import CategoryChip from '../components/CategoryChip';
-
-const CATEGORIES = ['Toutes', 'Viande', 'Poisson', 'Volaille', 'Mouton'];
 
 /**
  * HomeScreen — écran principal avec header, bannière, catégories, offres et crédits récents
  */
 const HomeScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
-  const [activeCategory, setActiveCategory] = useState('Toutes');
+  const [activeCategory, setActiveCategory] = useState(categories[0].id);
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
   const filteredOffers =
-    activeCategory === 'Toutes'
+    activeCategory === 'all'
       ? offers
       : offers.filter(o => o.category === activeCategory);
 
@@ -55,25 +53,25 @@ const HomeScreen = ({navigation}) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
         {/* ——— BANNIÈRE PROMOTIONNELLE ——— */}
         <View style={styles.banner}>
-          <Text style={styles.bannerEmoji}>🎉</Text>
+          <Text style={styles.bannerEmoji}>{banner.emoji}</Text>
           <View style={styles.bannerText}>
-            <Text style={styles.bannerTitle}>-20% sur le boeuf !</Text>
-            <Text style={styles.bannerSub}>Livraison gratuite ce weekend</Text>
+            <Text style={styles.bannerTitle}>{banner.title}</Text>
+            <Text style={styles.bannerSub}>{banner.subtitle}</Text>
           </View>
         </View>
 
         {/* ——— CATÉGORIES ——— */}
         <View style={styles.section}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-            {CATEGORIES.map(cat => (
+            {categories.map(cat => (
               <CategoryChip
-                key={cat}
-                label={cat}
-                active={activeCategory === cat}
-                onPress={() => setActiveCategory(cat)}
+                key={cat.id}
+                label={cat.label}
+                active={activeCategory === cat.id}
+                onPress={() => setActiveCategory(cat.id)}
               />
             ))}
           </ScrollView>
@@ -136,8 +134,10 @@ const HomeScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    overflow: 'hidden',
     backgroundColor: COLORS.background,
   },
+  scroll: {flex: 1},
   header: {
     backgroundColor: COLORS.primary,
     flexDirection: 'row',
