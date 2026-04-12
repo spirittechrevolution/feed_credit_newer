@@ -5,7 +5,17 @@
 
 import 'react-native-gesture-handler';
 import React from 'react';
-import {StatusBar} from 'react-native';
+import {StatusBar, Platform} from 'react-native';
+
+// Fix web scroll: Metro dev server ne charge pas public/index.html,
+// on injecte donc le CSS nécessaire directement au runtime.
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent =
+    'html,body{height:100%;overflow:hidden;margin:0}' +
+    '#root{display:flex;flex-direction:column;height:100%}';
+  document.head.appendChild(style);
+}
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
