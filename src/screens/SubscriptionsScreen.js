@@ -5,6 +5,7 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Alert,
   StatusBar,
 } from 'react-native';
 import COLORS from '../utils/colors';
@@ -12,6 +13,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {subscriptions, subscriptionFilters, subscriptionStatusConfig} from '../utils/mockData';
 import ProgressBar from '../components/ProgressBar';
 import ButtonPrimary from '../components/ButtonPrimary';
+import Footer from '../components/Footer';
 
 /**
  * SubscriptionsScreen — liste des commandes filtrées par statut
@@ -87,7 +89,14 @@ const SubscriptionsScreen = ({navigation}) => {
               onPress={() => navigation.navigate('Payment', {subscription: item})}
               style={styles.actionBtnPay}
             />
-            <TouchableOpacity style={styles.detailsBtn}>
+            <TouchableOpacity
+              style={styles.detailsBtn}
+              onPress={() =>
+                Alert.alert(
+                  `${item.offerEmoji} ${item.offerTitle}`,
+                  `📅 Commande du : ${item.date}\n💰 Montant total : ${item.amount.toLocaleString('fr-FR')} CFA\n✅ Payé : ${item.paid.toLocaleString('fr-FR')} CFA\n⏳ Restant : ${(item.amount - item.paid).toLocaleString('fr-FR')} CFA\n📆 Prochaine échéance : ${item.nextDue}\n🔄 Modalité : ${item.mode}`,
+                )
+              }>
               <Text style={styles.detailsBtnText}>DÉTAILS</Text>
             </TouchableOpacity>
           </View>
@@ -135,6 +144,7 @@ const SubscriptionsScreen = ({navigation}) => {
             <Text style={styles.emptyText}>Aucune commande {activeFilter.toLowerCase()}</Text>
           </View>
         }
+        ListFooterComponent={<Footer />}
       />
     </View>
   );

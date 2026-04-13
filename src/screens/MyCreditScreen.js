@@ -11,6 +11,7 @@ import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {user, creditHistory, paymentHistory} from '../utils/mockData';
 import ProgressBar from '../components/ProgressBar';
+import Footer from '../components/Footer';
 
 const STAR_COUNT = 4; // sur 5
 
@@ -145,6 +146,7 @@ const MyCreditScreen = ({navigation}) => {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+      <Footer />
     </View>
   );
 };

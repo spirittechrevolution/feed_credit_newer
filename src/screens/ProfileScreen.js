@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {user, profileMenuItems} from '../utils/mockData';
+import {user, profileMenuItems, userAddresses, faqItems, settingsOptions} from '../utils/mockData';
+import Footer from '../components/Footer';
 import {useAuth} from '../context/AuthContext';
 
 /**
@@ -36,6 +37,29 @@ const ProfileScreen = ({navigation}) => {
         },
       ],
     );
+  };
+
+  const handleMenuPress = item => {
+    if (item.screen) {
+      navigation.navigate(item.screen);
+      return;
+    }
+    if (item.id === 'settings') {
+      const lines = settingsOptions
+        .map(s => (s.type === 'toggle' ? `${s.value ? '✅' : '⬜'} ${s.label}` : `🔧 ${s.label} : ${s.value}`))
+        .join('\n');
+      Alert.alert('⚙️ Paramètres', lines);
+    } else if (item.id === 'addresses') {
+      const lines = userAddresses
+        .map(a => `${a.default ? '📍' : '📌'} ${a.label}\n   ${a.address}`)
+        .join('\n\n');
+      Alert.alert('📍 Mes adresses', lines);
+    } else if (item.id === 'help') {
+      const lines = faqItems
+        .map(f => `❓ ${f.q}\n➜ ${f.a}`)
+        .join('\n\n');
+      Alert.alert('Aide & Support', lines);
+    }
   };
 
   return (
@@ -99,7 +123,7 @@ const ProfileScreen = ({navigation}) => {
               key={item.id}
               style={styles.menuItem}
               activeOpacity={0.7}
-              onPress={() => item.screen && navigation.navigate(item.screen)}>
+              onPress={() => handleMenuPress(item)}>
               <Text style={styles.menuIcon}>{item.icon}</Text>
               <Text style={styles.menuLabel}>{item.label}</Text>
               <Text style={styles.menuArrow}>›</Text>
@@ -114,6 +138,7 @@ const ProfileScreen = ({navigation}) => {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+      <Footer />
     </View>
   );
 };

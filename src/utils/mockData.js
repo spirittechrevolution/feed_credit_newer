@@ -217,3 +217,27 @@ export const paymentHistory = [
   {id: 2, date: '15/10/2025', amount: 22000, method: 'Orange Money', status: 'confirme'},
   {id: 3, date: '30/09/2025', amount: 40000, method: 'Wave', status: 'confirme'},
 ];
+
+// ─── Adresses utilisateur (ProfileScreen) ────────────────────────────────
+export const userAddresses = [
+  {id: 1, label: 'Domicile',  address: '12 Rue Blaise Diagne, Médina, Dakar', default: true},
+  {id: 2, label: 'Bureau',    address: '45 Avenue Cheikh Anta Diop, Fann, Dakar', default: false},
+  {id: 3, label: 'Famille',   address: '8 Allée des Baobabs, Thiès', default: false},
+];
+
+// ─── FAQ / Aide & Support ─────────────────────────────────────────────────
+export const faqItems = [
+  {id: 1, q: 'Comment fonctionne le crédit ?',      a: 'Vous commandez maintenant et payez fin du mois ou en plusieurs semaines selon la modalité choisie.'},
+  {id: 2, q: 'Comment payer une échéance ?',         a: 'Allez dans "Mes commandes", sélectionnez la commande et appuyez sur "Payer".'},
+  {id: 3, q: 'Que se passe-t-il en cas de retard ?', a: 'Un retard impacte votre score de confiance. Contactez-nous au +221 33 000 00 00.'},
+  {id: 4, q: 'Comment améliorer mon score ?',        a: 'Payez à temps et régulièrement. Chaque paiement ponctuel augmente votre score.'},
+];
+
+// ─── Paramètres utilisateur ───────────────────────────────────────────────
+export const settingsOptions = [
+  {id: 'notif_push', label: 'Notifications push',     type: 'toggle', value: true},
+  {id: 'notif_sms',  label: 'Rappels SMS',             type: 'toggle', value: true},
+  {id: 'biometric',  label: 'Connexion biométrique',   type: 'toggle', value: false},
+  {id: 'language',   label: 'Langue',                  type: 'value',  value: 'Français'},
+  {id: 'currency',   label: 'Devise',                  type: 'value',  value: 'CFA (XOF)'},
+];

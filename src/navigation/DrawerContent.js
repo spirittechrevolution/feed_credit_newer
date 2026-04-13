@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {DrawerContentScrollView} from '@react-navigation/drawer';
 import COLORS from '../utils/colors';
-import {user, notifications} from '../utils/mockData';
+import {user, notifications, settingsOptions} from '../utils/mockData';
 import {useAuth} from '../context/AuthContext';
 
 const MENU = [
@@ -51,10 +51,13 @@ const DrawerContent = props => {
 
   const navigate = screen => {
     if (!screen) {
+      const lines = settingsOptions
+        .map(s => (s.type === 'toggle' ? `${s.value ? '✅' : '⬜'} ${s.label}` : `🔧 ${s.label} : ${s.value}`))
+        .join('\n');
       if (Platform.OS === 'web') {
-        window.alert('Cette fonctionnalité arrive prochainement.');
+        window.alert('⚙️ Paramètres\n\n' + lines);
       } else {
-        Alert.alert('Bientôt disponible', 'Cette fonctionnalité arrive prochainement.');
+        Alert.alert('⚙️ Paramètres', lines);
       }
       return;
     }

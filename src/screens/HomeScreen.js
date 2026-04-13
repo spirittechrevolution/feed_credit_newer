@@ -13,6 +13,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {offers, subscriptions, notifications, categories, banner} from '../utils/mockData';
 import OfferCard from '../components/OfferCard';
 import CategoryChip from '../components/CategoryChip';
+import Footer from '../components/Footer';
 
 /**
  * HomeScreen — écran principal avec header, bannière, catégories, offres et crédits récents
@@ -127,6 +128,7 @@ const HomeScreen = ({navigation}) => {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+      <Footer />
     </View>
   );
 };
