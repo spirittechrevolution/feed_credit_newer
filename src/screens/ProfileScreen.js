@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {user, profileMenuItems} from '../utils/mockData';
+import {profileMenuItems} from '../utils/mockData';
+import {getUserProfile} from '../utils/api';
 import Footer from '../components/Footer';
 import {useAuth} from '../context/AuthContext';
 
@@ -19,7 +20,24 @@ import {useAuth} from '../context/AuthContext';
  */
 const ProfileScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
-  const {logout} = useAuth();
+  const {logout, accessToken} = useAuth();
+  const [user, setUser] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!accessToken) return;
+    setLoading(true);
+    setError(null);
+    console.log('[PROFILE] Appel API /users/me');
+    getUserProfile(accessToken)
+      .then(data => {
+        console.log('[PROFILE] Réponse API /users/me:', data);
+        setUser(data);
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [accessToken]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -65,32 +83,32 @@ const ProfileScreen = ({navigation}) => {
         {/* Avatar */}
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {user.name.split(' ').map(n => n[0]).join('')}
+            {user && user.name ? user.name.split(' ').map(n => n[0]).join('') : ''}
           </Text>
         </View>
-        <Text style={styles.userName}>{user.name}</Text>
-        <Text style={styles.userPhone}>{user.phone}</Text>
-        <Text style={styles.userEmail}>{user.email}</Text>
-        <Text style={styles.memberSince}>Membre depuis {user.memberSince}</Text>
+        <Text style={styles.userName}>{user && user.name ? user.name : ''}</Text>
+        <Text style={styles.userPhone}>{user && user.phone ? user.phone : ''}</Text>
+        <Text style={styles.userEmail}>{user && user.email ? user.email : ''}</Text>
+        <Text style={styles.memberSince}>Membre depuis {user && user.memberSince ? user.memberSince : ''}</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
         {/* ——— Statistiques ——— */}
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>{user.ordersCount}</Text>
+            <Text style={styles.statValue}>{user && typeof user.ordersCount === 'number' ? user.ordersCount : 0}</Text>
             <Text style={styles.statLabel}>Commandes</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statBox}>
             <Text style={[styles.statValue, {color: COLORS.success}]}>
-              {user.repaymentRate}%
+              {user && typeof user.repaymentRate === 'number' ? user.repaymentRate : 0}%
             </Text>
             <Text style={styles.statLabel}>Remboursement</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statBox}>
-            <Text style={[styles.statValue, {color: COLORS.warning}]}>{user.lateCount}</Text>
+            <Text style={[styles.statValue, {color: COLORS.warning}]}>{user && typeof user.lateCount === 'number' ? user.lateCount : 0}</Text>
             <Text style={styles.statLabel}>Retards</Text>
           </View>
         </View>
@@ -99,10 +117,14 @@ const ProfileScreen = ({navigation}) => {
         <View style={styles.scoreCard}>
           <View style={styles.scoreLeft}>
             <Text style={styles.scoreTitle}>Score de confiance</Text>
-            <Text style={styles.scoreSub}>{user.trustLevel} — Acompte {user.depositRate}</Text>
+            <Text style={styles.scoreSub}>
+              {(user && typeof user.trustLevel === 'string' ? user.trustLevel : 'N/A')}
+              {' — Acompte '}
+              {(user && typeof user.depositRate === 'number' ? user.depositRate : 0)}
+            </Text>
           </View>
           <View style={styles.scoreCircle}>
-            <Text style={styles.scoreNum}>{user.trustScore}</Text>
+            <Text style={styles.scoreNum}>{user && typeof user.trustScore === 'number' ? user.trustScore : 0}</Text>
             <Text style={styles.scoreMax}>/100</Text>
           </View>
         </View>

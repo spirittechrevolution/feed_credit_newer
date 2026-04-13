@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {offers, subscriptions, notifications, categories, banner} from '../utils/mockData';
+import {subscriptions, notifications, categories, banner} from '../utils/mockData';
+import {getOffers} from '../utils/api';
 import OfferCard from '../components/OfferCard';
 import CategoryChip from '../components/CategoryChip';
 import Footer from '../components/Footer';
@@ -26,19 +27,53 @@ const HomeScreen = ({navigation}) => {
   const [activeCategory, setActiveCategory] = useState(categories[0].id);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [offers, setOffers] = useState([]);
+  const [offersLoading, setOffersLoading] = useState(true);
+  const [offersError, setOffersError] = useState(null);
   const {totalItems} = useCart();
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1200);
+  const fetchOffers = useCallback(async () => {
+    setOffersLoading(true);
+    setOffersError(null);
+    try {
+      const data = await getOffers();
+      setOffers(data);
+    } catch (e) {
+      setOffersError(e.message);
+    } finally {
+      setOffersLoading(false);
+    }
   }, []);
 
+  React.useEffect(() => {
+    fetchOffers();
+  }, [fetchOffers]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchOffers().finally(() => setRefreshing(false));
+  }, [fetchOffers]);
+
+  // Adapter les champs selon le backend (product_name -> title, price_cash, price_credit, etc.)
+  const mappedOffers = offers.map(o => ({
+    ...o,
+    title: o.product_name || o.title,
+    priceCash: o.price_cash || o.priceCash,
+    priceCredit: o.price_credit || o.priceCredit,
+    max: o.max_clients || o.max,
+    available: (o.max_clients || o.max) - (o.current_clients || 0),
+    mode: o.payment_mode || o.mode,
+    emoji: o.emoji,
+    description: o.description,
+    deposit: o.deposit,
+    category: o.category,
+  }));
   const baseOffers =
     activeCategory === 'all'
-      ? offers
-      : offers.filter(o => o.category === activeCategory);
+      ? mappedOffers
+      : mappedOffers.filter(o => o.category === activeCategory);
 
   const filteredOffers = searchQuery.trim()
     ? baseOffers.filter(o =>
@@ -138,7 +173,11 @@ const HomeScreen = ({navigation}) => {
         {/* ——— OFFRES ——— */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Offres disponibles</Text>
-          {filteredOffers.length === 0 ? (
+          {offersLoading ? (
+            <Text style={styles.empty}>Chargement des offres...</Text>
+          ) : offersError ? (
+            <Text style={styles.empty}>Erreur : {offersError}</Text>
+          ) : filteredOffers.length === 0 ? (
             <Text style={styles.empty}>Aucune offre dans cette catégorie</Text>
           ) : (
             filteredOffers.map(offer => (
