@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {DrawerContentScrollView} from '@react-navigation/drawer';
 import COLORS from '../utils/colors';
-import {user, notifications} from '../utils/mockData';
+import {notifications} from '../utils/mockData';
 import {useAuth} from '../context/AuthContext';
 
 const MENU = [
@@ -26,8 +26,8 @@ const MENU = [
  */
 const DrawerContent = props => {
   const {navigation} = props;
-  const {logout} = useAuth();
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const {logout, currentUser} = useAuth();
+  const unreadCount = notifications && Array.isArray(notifications) ? notifications.filter(n => n.unread).length : 0;
 
   const handleLogout = () => {
     const doLogout = () => {
@@ -66,14 +66,30 @@ const DrawerContent = props => {
       <View style={styles.userSection}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {user.name.split(' ').map(n => n[0]).join('')}
+            {currentUser && typeof currentUser.name === 'string' && currentUser.name.trim() !== ''
+              ? currentUser.name.split(' ').map(n => n && n[0] ? n[0] : '').join('')
+              : ''}
           </Text>
         </View>
-        <Text style={styles.userName}>{user.name}</Text>
-        <Text style={styles.userPhone}>{user.phone}</Text>
+        <Text style={styles.userName}>
+          {currentUser && typeof currentUser.name === 'string' && currentUser.name.trim() !== ''
+            ? currentUser.name
+            : 'Utilisateur'}</Text>
+        <Text style={styles.userPhone}>
+          {currentUser && typeof currentUser.phone === 'string' && currentUser.phone.trim() !== ''
+            ? currentUser.phone
+            : ''}
+        </Text>
         {/* Score */}
         <View style={styles.scoreBadge}>
-          <Text style={styles.scoreBadgeText}>⭐ {user.trustScore} pts — {user.trustLevel}</Text>
+          <Text style={styles.scoreBadgeText}>
+            {currentUser && typeof currentUser.trust_score === 'number'
+              ? `⭐ ${currentUser.trust_score} pts`
+              : '⭐ 0 pts'}
+            {currentUser && typeof currentUser.trustLevel === 'string' && currentUser.trustLevel.trim() !== ''
+              ? ` — ${currentUser.trustLevel}`
+              : ''}
+          </Text>
         </View>
       </View>
 

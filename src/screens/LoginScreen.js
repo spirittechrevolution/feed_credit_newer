@@ -49,6 +49,7 @@ const LoginScreen = ({navigation}) => {
 
   // Etape 3 : profil
   const [regName, setRegName] = useState('');
+  const [regBirthDate, setRegBirthDate] = useState(''); // JJ/MM/AAAA
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirm, setRegConfirm] = useState('');
@@ -99,8 +100,14 @@ const LoginScreen = ({navigation}) => {
       return;
     }
     setRegPhoneError('');
+    // Forcer l'indicatif +221 si absent
+    let phoneToSend = regPhone.trim();
+    if (!phoneToSend.startsWith('+221')) {
+      // Retirer les 0 initiaux éventuels
+      phoneToSend = '+221' + phoneToSend.replace(/^0+/, '');
+    }
     try {
-      await sendRegistrationOTP(regPhone);
+      await sendRegistrationOTP(phoneToSend);
       setRegStep(2);
     } catch (e) {
       Alert.alert('Erreur', e.message);
@@ -155,6 +162,19 @@ const LoginScreen = ({navigation}) => {
   const validateProfile = () => {
     const errors = {};
     if (!regName) errors.name = 'Nom complet requis';
+    // Validation date de naissance (format JJ/MM/AAAA)
+    if (!regBirthDate) {
+      errors.birthDate = 'Date de naissance requise';
+    } else {
+      const match = regBirthDate.match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/);
+      if (!match) {
+        errors.birthDate = 'Format JJ/MM/AAAA attendu';
+      } else {
+        const d = parseInt(match[1], 10), m = parseInt(match[2], 10) - 1, y = parseInt(match[3], 10);
+        const date = new Date(y, m, d);
+        if (isNaN(date.getTime())) errors.birthDate = 'Date invalide';
+      }
+    }
     if (!regPassword) errors.password = 'Mot de passe requis';
     if (regPassword.length < 6) errors.password = 'Minimum 6 caracteres';
     if (regPassword !== regConfirm) errors.confirm = 'Les mots de passe ne correspondent pas';
@@ -165,8 +185,16 @@ const LoginScreen = ({navigation}) => {
 
   const handleRegister = async () => {
     if (!validateProfile()) return;
+    // Conversion JJ/MM/AAAA -> AAAA-MM-DD pour l'API
+    let birthIso = null;
+    if (regBirthDate) {
+      const match = regBirthDate.match(/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/);
+      if (match) {
+        birthIso = `${match[3]}-${match[2]}-${match[1]}`;
+      }
+    }
     try {
-      await register(regName, regPhone, regEmail, regPassword);
+      await register(regName, regPhone, regEmail, regPassword, regConfirm, acceptCGU, birthIso);
       // RootNavigator bascule automatiquement vers Main via isAuthenticated
     } catch (e) {
       Alert.alert('Erreur', e.message);
@@ -351,6 +379,14 @@ const LoginScreen = ({navigation}) => {
                   onChangeText={setRegName}
                   placeholder="Jean Diop"
                   error={regErrors.name}
+                />
+                <InputField
+                  label="Date de naissance (JJ/MM/AAAA)"
+                  value={regBirthDate}
+                  onChangeText={setRegBirthDate}
+                  placeholder="01/01/2000"
+                  keyboardType="numeric"
+                  error={regErrors.birthDate}
                 />
                 <InputField
                   label="Email (optionnel)"

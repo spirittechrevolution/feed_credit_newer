@@ -1,5 +1,7 @@
 import React, {createContext, useContext, useState} from 'react';
+
 import {user as mockUser} from '../utils/mockData';
+import {post} from '../utils/api';
 
 // Contexte d'authentification global
 const AuthContext = createContext(null);
@@ -9,99 +11,142 @@ export const AuthProvider = ({children}) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [otpPhone, setOtpPhone] = useState('');
+  const [accessToken, setAccessToken] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
 
   // Connexion simulée (mock)
+  // Connexion réelle (API)
   const login = async (phone, password) => {
     setIsLoading(true);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        setIsLoading(false);
-        if (phone && password) {
-          setOtpPhone(phone);
-          setCurrentUser(mockUser);
-          setIsAuthenticated(true);
-          resolve({success: true});
-        } else {
-          reject(new Error('Identifiants invalides'));
-        }
-      }, 1000);
-    });
+    try {
+      let phoneToSend = phone.trim();
+      if (!phoneToSend.startsWith('+221')) {
+        phoneToSend = '+221' + phoneToSend.replace(/^0+/, '');
+      }
+      const res = await post('auth/login', { phone: phoneToSend, password });
+      setIsLoading(false);
+      setOtpPhone(phoneToSend);
+      setCurrentUser(res.user);
+      setIsAuthenticated(true);
+      setAccessToken(res.access_token);
+      setRefreshToken(res.refresh_token);
+      console.log('[LOGIN] user:', res.user);
+      return res;
+    } catch (e) {
+      setIsLoading(false);
+      throw e;
+    }
   };
 
-  // Envoi OTP pour inscription (mock — simule l'appel backend)
+  // Envoi OTP pour inscription (API réelle)
   const sendRegistrationOTP = async phone => {
     setIsLoading(true);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        setIsLoading(false);
-        if (phone && phone.length >= 8) {
-          setOtpPhone(phone);
-          // En production : appel API POST /auth/send-otp {phone}
-          resolve({success: true});
-        } else {
-          reject(new Error('Numéro de téléphone invalide'));
-        }
-      }, 1000);
-    });
+    try {
+      if (!phone || phone.length < 8) throw new Error('Numéro de téléphone invalide');
+      let phoneToSend = phone.trim();
+      if (!phoneToSend.startsWith('+221')) {
+        phoneToSend = '+221' + phoneToSend.replace(/^0+/, '');
+      }
+      const res = await post('auth/register/send-otp', {phone: phoneToSend});
+      setOtpPhone(phoneToSend);
+      setIsLoading(false);
+      return res;
+    } catch (e) {
+      setIsLoading(false);
+      throw e;
+    }
   };
 
-  // Vérification OTP inscription (mock — le vrai OTP sera 123456 en démo)
+  // Vérification OTP inscription (API réelle)
   const verifyRegistrationOTP = async (phone, code) => {
     setIsLoading(true);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        setIsLoading(false);
-        // En production : appel API POST /auth/verify-otp {phone, code}
-        if (code === '123456' || code.length === 6) {
-          resolve({success: true});
-        } else {
-          reject(new Error('Code OTP invalide ou expiré'));
-        }
-      }, 1000);
-    });
+    try {
+      let phoneToSend = phone.trim();
+      if (!phoneToSend.startsWith('+221')) {
+        phoneToSend = '+221' + phoneToSend.replace(/^0+/, '');
+      }
+      const res = await post('auth/register/verify-otp', { phone: phoneToSend, otp: code });
+      setIsLoading(false);
+      return res;
+    } catch (e) {
+      setIsLoading(false);
+      throw e;
+    }
   };
 
-  // Inscription simulée
-  const register = async (name, phone, email, password) => {
+  // Inscription réelle
+  const register = async (
+    name,
+    phone,
+    email,
+    password,
+    confirm_password,
+    accept_terms,
+    date_naissance = null,
+  ) => {
     setIsLoading(true);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        setIsLoading(false);
-        if (name && phone && password) {
-          const newUser = {...mockUser, name, phone, email};
-          setOtpPhone(phone);
-          setCurrentUser(newUser);
-          setIsAuthenticated(true);
-          resolve({success: true});
-        } else {
-          reject(new Error('Données invalides'));
-        }
-      }, 1200);
-    });
+     let phoneToSend = phone.trim();
+      if (!phoneToSend.startsWith('+221')) {
+        phoneToSend = '+221' + phoneToSend.replace(/^0+/, '');
+      }
+    try {
+      const res = await post('auth/register', {
+        name,
+        phone: phoneToSend,
+        email,
+        password,
+        confirm_password: confirm_password || password,
+        accept_terms: Boolean(accept_terms),
+        date_naissance,
+      });
+      setIsLoading(false);
+      setCurrentUser(res.user || { name, phone, email });
+      setIsAuthenticated(true);
+      return res;
+    } catch (e) {
+      setIsLoading(false);
+      throw e;
+    }
   };
 
-  // Vérification OTP simulée
-  const verifyOTP = async otp => {
+  // Vérification OTP réelle (générique)
+  const verifyOTP = async (phone, otp) => {
     setIsLoading(true);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        setIsLoading(false);
-        if (otp === '123456' || otp.length === 6) {
-          setCurrentUser(mockUser);
-          setIsAuthenticated(true);
-          resolve({success: true});
-        } else {
-          reject(new Error('Code OTP invalide'));
-        }
-      }, 1000);
-    });
+    try {
+      let phoneToSend = phone.trim();
+      if (!phoneToSend.startsWith('+221')) {
+        phoneToSend = '+221' + phoneToSend.replace(/^0+/, '');
+      }
+      const res = await post('auth/register/verify-otp', { phone: phoneToSend, otp });
+      setIsLoading(false);
+      setCurrentUser(res.user || { phone: phoneToSend });
+      setIsAuthenticated(true);
+      return res;
+    } catch (e) {
+      setIsLoading(false);
+      throw e;
+    }
   };
 
   // Déconnexion
-  const logout = () => {
-    setIsAuthenticated(false);
-    setCurrentUser(null);
-    setOtpPhone('');
+  // Déconnexion réelle (API)
+  const logout = async (refresh_token) => {
+    setIsLoading(true);
+    try {
+      if (refresh_token) {
+        await post('auth/logout', { refresh_token });
+      }
+    } catch (e) {
+      // Optionnel : afficher une erreur ou ignorer
+    } finally {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setOtpPhone('');
+      setAccessToken(null);
+      setRefreshToken(null);
+      setIsLoading(false);
+      console.log('[LOGOUT] Utilisateur déconnecté');
+    }
   };
 
   return (
@@ -111,6 +156,8 @@ export const AuthProvider = ({children}) => {
         currentUser,
         isLoading,
         otpPhone,
+        accessToken,
+        refreshToken,
         login,
         sendRegistrationOTP,
         verifyRegistrationOTP,
