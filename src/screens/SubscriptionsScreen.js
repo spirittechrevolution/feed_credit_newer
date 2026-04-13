@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   StatusBar,
+  RefreshControl,
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -21,6 +22,12 @@ import Footer from '../components/Footer';
 const SubscriptionsScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const [activeFilter, setActiveFilter] = useState(subscriptionFilters[0].id);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1000);
+  }, []);
 
   const filtered = subscriptions.filter(s => s.status === activeFilter);
 
@@ -138,6 +145,14 @@ const SubscriptionsScreen = ({navigation}) => {
         keyExtractor={item => String(item.id)}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
         ListEmptyComponent={
           <View style={styles.emptyBox}>
             <Text style={styles.emptyEmoji}>📭</Text>

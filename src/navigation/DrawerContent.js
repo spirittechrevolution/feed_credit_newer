@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {DrawerContentScrollView} from '@react-navigation/drawer';
 import COLORS from '../utils/colors';
-import {user, notifications, settingsOptions} from '../utils/mockData';
+import {user, notifications} from '../utils/mockData';
 import {useAuth} from '../context/AuthContext';
 
 const MENU = [
@@ -51,14 +51,9 @@ const DrawerContent = props => {
 
   const navigate = screen => {
     if (!screen) {
-      const lines = settingsOptions
-        .map(s => (s.type === 'toggle' ? `${s.value ? '✅' : '⬜'} ${s.label}` : `🔧 ${s.label} : ${s.value}`))
-        .join('\n');
-      if (Platform.OS === 'web') {
-        window.alert('⚙️ Paramètres\n\n' + lines);
-      } else {
-        Alert.alert('⚙️ Paramètres', lines);
-      }
+      // Paramètres n'a pas de screen propre dans MENU → naviguer vers Settings
+      navigation.navigate('AppStack', {screen: 'Settings'});
+      navigation.closeDrawer();
       return;
     }
     navigation.navigate('AppStack', {screen});

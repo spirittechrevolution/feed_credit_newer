@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {user, profileMenuItems, userAddresses, faqItems, settingsOptions} from '../utils/mockData';
+import {user, profileMenuItems} from '../utils/mockData';
 import Footer from '../components/Footer';
 import {useAuth} from '../context/AuthContext';
 
@@ -45,20 +45,11 @@ const ProfileScreen = ({navigation}) => {
       return;
     }
     if (item.id === 'settings') {
-      const lines = settingsOptions
-        .map(s => (s.type === 'toggle' ? `${s.value ? '✅' : '⬜'} ${s.label}` : `🔧 ${s.label} : ${s.value}`))
-        .join('\n');
-      Alert.alert('⚙️ Paramètres', lines);
+      navigation.navigate('Settings');
     } else if (item.id === 'addresses') {
-      const lines = userAddresses
-        .map(a => `${a.default ? '📍' : '📌'} ${a.label}\n   ${a.address}`)
-        .join('\n\n');
-      Alert.alert('📍 Mes adresses', lines);
+      navigation.navigate('Addresses');
     } else if (item.id === 'help') {
-      const lines = faqItems
-        .map(f => `❓ ${f.q}\n➜ ${f.a}`)
-        .join('\n\n');
-      Alert.alert('Aide & Support', lines);
+      navigation.navigate('Help');
     }
   };
 

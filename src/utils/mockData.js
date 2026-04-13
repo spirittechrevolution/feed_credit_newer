@@ -235,9 +235,9 @@ export const faqItems = [
 
 // ─── Paramètres utilisateur ───────────────────────────────────────────────
 export const settingsOptions = [
-  {id: 'notif_push', label: 'Notifications push',     type: 'toggle', value: true},
-  {id: 'notif_sms',  label: 'Rappels SMS',             type: 'toggle', value: true},
-  {id: 'biometric',  label: 'Connexion biométrique',   type: 'toggle', value: false},
-  {id: 'language',   label: 'Langue',                  type: 'value',  value: 'Français'},
-  {id: 'currency',   label: 'Devise',                  type: 'value',  value: 'CFA (XOF)'},
+  {id: 'notif_push', icon: '🔔', label: 'Notifications push',   type: 'toggle', value: true},
+  {id: 'notif_sms',  icon: '💬', label: 'Rappels SMS',           type: 'toggle', value: true},
+  {id: 'biometric',  icon: '👆', label: 'Connexion biometrique', type: 'toggle', value: false},
+  {id: 'language',   icon: '🌍', label: 'Langue',                type: 'value',  value: 'Francais'},
+  {id: 'currency',   icon: '💰', label: 'Devise',                type: 'value',  value: 'CFA (XOF)'},
 ];

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  Share,
   StatusBar,
 } from 'react-native';
 import COLORS from '../utils/colors';
@@ -15,6 +16,7 @@ import {offerFeatures} from '../utils/mockData';
 import ButtonPrimary from '../components/ButtonPrimary';
 import ButtonOutline from '../components/ButtonOutline';
 import ProgressBar from '../components/ProgressBar';
+import {useCart} from '../context/CartContext';
 
 /**
  * OfferDetailScreen — détail d'une offre avec onglets Description / Paiement
@@ -24,6 +26,37 @@ const OfferDetailScreen = ({route, navigation}) => {
   const {offer} = route.params;
   const [activeTab, setActiveTab] = useState('description');
   const progress = offer.available / offer.max;
+  const {addToCart} = useCart();
+
+  const handleShare = async () => {
+    const message =
+      `${offer.emoji} ${offer.title}\n` +
+      `Comptant : ${offer.priceCash.toLocaleString('fr-FR')} CFA | Credit : ${offer.priceCredit.toLocaleString('fr-FR')} CFA\n` +
+      `Modalite : ${offer.mode}\n` +
+      `Disponibles : ${offer.available}/${offer.max}\n` +
+      `Commandez sur FeedCredit !`;
+    if (Platform.OS === 'web') {
+      if (navigator.share) {
+        navigator.share({title: offer.title, text: message}).catch(() => {});
+      } else {
+        window.alert(message);
+      }
+    } else {
+      Share.share({message}).catch(() => {});
+    }
+  };
+
+  const handleAddToCart = mode => {
+    addToCart(offer, mode);
+    Alert.alert(
+      'Ajoute au panier',
+      `${offer.title} ajoute au panier (${mode === 'credit' ? 'a credit' : 'au comptant'})`,
+      [
+        {text: 'Continuer', style: 'cancel'},
+        {text: 'Voir le panier', onPress: () => navigation.navigate('Cart')},
+      ],
+    );
+  };
 
   const handleBuyCash = () => {
     const message = `Confirmez l'achat de ${offer.title} pour ${offer.priceCash.toLocaleString('fr-FR')} CFA ?`;
@@ -63,8 +96,10 @@ const OfferDetailScreen = ({route, navigation}) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Détail de l'offre</Text>
-        <View style={styles.headerRight} />
+        <Text style={styles.headerTitle}>Detail de l'offre</Text>
+        <TouchableOpacity onPress={handleShare} style={styles.shareBtn}>
+          <Text style={styles.shareIcon}>↗</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
@@ -179,11 +214,22 @@ const OfferDetailScreen = ({route, navigation}) => {
               style={styles.actionBtn}
             />
             <ButtonPrimary
-              title="À CRÉDIT"
+              title="A CREDIT"
               onPress={handleBuyCredit}
               style={styles.actionBtn}
             />
           </View>
+          {/* Ajouter au panier */}
+          <TouchableOpacity
+            style={styles.cartBtn}
+            onPress={() => handleAddToCart('credit')}>
+            <Text style={styles.cartBtnText}>🛒 Ajouter au panier (credit)</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.cartBtn, styles.cartBtnCash]}
+            onPress={() => handleAddToCart('cash')}>
+            <Text style={[styles.cartBtnText, {color: COLORS.success}]}>🛒 Ajouter au panier (comptant)</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -210,6 +256,33 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   headerRight: {width: 30},
+  shareBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shareIcon: {fontSize: 18, color: COLORS.white, fontWeight: 'bold'},
+  cartBtn: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+  },
+  cartBtnCash: {
+    borderColor: COLORS.success,
+    backgroundColor: '#E8F5E9',
+  },
+  cartBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
   imagePlaceholder: {
     backgroundColor: COLORS.primaryLight,
     height: 200,

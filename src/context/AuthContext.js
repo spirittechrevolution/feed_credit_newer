@@ -18,6 +18,8 @@ export const AuthProvider = ({children}) => {
         setIsLoading(false);
         if (phone && password) {
           setOtpPhone(phone);
+          setCurrentUser(mockUser);
+          setIsAuthenticated(true);
           resolve({success: true});
         } else {
           reject(new Error('Identifiants invalides'));
@@ -66,7 +68,10 @@ export const AuthProvider = ({children}) => {
       setTimeout(() => {
         setIsLoading(false);
         if (name && phone && password) {
+          const newUser = {...mockUser, name, phone, email};
           setOtpPhone(phone);
+          setCurrentUser(newUser);
+          setIsAuthenticated(true);
           resolve({success: true});
         } else {
           reject(new Error('Données invalides'));

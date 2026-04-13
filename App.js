@@ -7,8 +7,7 @@ import 'react-native-gesture-handler';
 import React from 'react';
 import {StatusBar, Platform} from 'react-native';
 
-// Fix web scroll: Metro dev server ne charge pas public/index.html,
-// on injecte donc le CSS nécessaire directement au runtime.
+// Fix web scroll
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.textContent =
@@ -21,14 +20,14 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-// Contexte
-import {AuthProvider} from './src/context/AuthContext';
+// Contextes
+import {AuthProvider, useAuth} from './src/context/AuthContext';
+import {CartProvider} from './src/context/CartContext';
 
 // Écrans d'authentification
 import SplashScreen from './src/screens/SplashScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LoginScreen from './src/screens/LoginScreen';
-import OTPScreen from './src/screens/OTPScreen';
 
 // Écrans principaux
 import HomeScreen from './src/screens/HomeScreen';
@@ -38,6 +37,10 @@ import PaymentScreen from './src/screens/PaymentScreen';
 import MyCreditScreen from './src/screens/MyCreditScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+import AddressesScreen from './src/screens/AddressesScreen';
+import HelpScreen from './src/screens/HelpScreen';
+import CartScreen from './src/screens/CartScreen';
 
 // Navigation latérale
 import DrawerContent from './src/navigation/DrawerContent';
@@ -47,7 +50,7 @@ import COLORS from './src/utils/colors';
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-// ─── Stack "App" imbriqué dans le Drawer ─────────────────────────────────────
+// ─── Stack App imbriqué dans le Drawer ───────────────────────────────────────
 const AppStack = () => (
   <Stack.Navigator screenOptions={{headerShown: false}}>
     <Stack.Screen name="Home" component={HomeScreen} />
@@ -57,6 +60,10 @@ const AppStack = () => (
     <Stack.Screen name="MyCredit" component={MyCreditScreen} />
     <Stack.Screen name="Notifications" component={NotificationsScreen} />
     <Stack.Screen name="Profile" component={ProfileScreen} />
+    <Stack.Screen name="Settings" component={SettingsScreen} />
+    <Stack.Screen name="Addresses" component={AddressesScreen} />
+    <Stack.Screen name="Help" component={HelpScreen} />
+    <Stack.Screen name="Cart" component={CartScreen} />
   </Stack.Navigator>
 );
 
@@ -72,26 +79,40 @@ const MainDrawer = () => (
   </Drawer.Navigator>
 );
 
-// ─── Stack d'authentification ─────────────────────────────────────────────────
+// ─── Stack d'entrée (Splash → Onboarding → Login) ────────────────────────────
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{headerShown: false}}>
     <Stack.Screen name="Splash" component={SplashScreen} />
     <Stack.Screen name="Onboarding" component={OnboardingScreen} />
     <Stack.Screen name="Login" component={LoginScreen} />
-    <Stack.Screen name="OTP" component={OTPScreen} />
-    <Stack.Screen name="MainDrawer" component={MainDrawer} />
   </Stack.Navigator>
 );
+
+// ─── Navigateur racine conditionnel ──────────────────────────────────────────
+const RootNavigator = () => {
+  const {isAuthenticated} = useAuth();
+  return (
+    <Stack.Navigator screenOptions={{headerShown: false}}>
+      {isAuthenticated ? (
+        <Stack.Screen name="Main" component={MainDrawer} />
+      ) : (
+        <Stack.Screen name="Auth" component={AuthStack} />
+      )}
+    </Stack.Navigator>
+  );
+};
 
 // ─── App principale ───────────────────────────────────────────────────────────
 export default function App() {
   return (
     <SafeAreaProvider style={{flex: 1, overflow: 'hidden'}}>
       <AuthProvider>
-        <NavigationContainer style={{flex: 1, overflow: 'hidden'}}>
-          <StatusBar backgroundColor={COLORS.primary} barStyle="light-content" />
-          <AuthStack />
-        </NavigationContainer>
+        <CartProvider>
+          <NavigationContainer style={{flex: 1, overflow: 'hidden'}}>
+            <StatusBar backgroundColor={COLORS.primary} barStyle="light-content" />
+            <RootNavigator />
+          </NavigationContainer>
+        </CartProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

@@ -18,7 +18,7 @@ import InputField from '../components/InputField';
 import {useAuth} from '../context/AuthContext';
 
 /**
- * LoginScreen â€” onglets CONNEXION / INSCRIPTION
+ * LoginScreen — onglets CONNEXION / INSCRIPTION
  * Inscription en 3 etapes :
  *   1. Saisie numero -> envoi OTP
  *   2. Verification OTP
@@ -86,7 +86,7 @@ const LoginScreen = ({navigation}) => {
     if (!validateLogin()) return;
     try {
       await login(loginPhone, loginPassword);
-      navigation.navigate('OTP');
+      // RootNavigator bascule automatiquement vers Main via isAuthenticated
     } catch (e) {
       Alert.alert('Erreur', e.message);
     }
@@ -167,7 +167,7 @@ const LoginScreen = ({navigation}) => {
     if (!validateProfile()) return;
     try {
       await register(regName, regPhone, regEmail, regPassword);
-      navigation.replace('MainDrawer');
+      // RootNavigator bascule automatiquement vers Main via isAuthenticated
     } catch (e) {
       Alert.alert('Erreur', e.message);
     }
@@ -187,7 +187,7 @@ const LoginScreen = ({navigation}) => {
             <View style={styles.stepItem}>
               <View style={[styles.stepCircle, active && styles.stepCircleActive, done && styles.stepCircleDone]}>
                 {done
-                  ? <Text style={styles.stepCheckmark}>âœ“</Text>
+                  ? <Text style={styles.stepCheckmark}>✓</Text>
                   : <Text style={[styles.stepNum, active && styles.stepNumActive]}>{step}</Text>
                 }
               </View>
@@ -212,7 +212,7 @@ const LoginScreen = ({navigation}) => {
 
         {/* Logo */}
         <View style={[styles.header, {paddingTop: insets.top + 20}]}>
-          <Text style={styles.logo}>ðŸ›’ FeedCredit</Text>
+          <Text style={styles.logo}>🛒 FeedCredit</Text>
           <Text style={styles.logoSub}>Votre credit alimentaire</Text>
         </View>
 
@@ -343,7 +343,7 @@ const LoginScreen = ({navigation}) => {
               <View>
                 <Text style={styles.stepTitle}>Completez votre profil</Text>
                 <Text style={styles.stepDesc}>
-                  Numero verifie âœ… {regPhone}
+                  Numero verifie ✅ {regPhone}
                 </Text>
                 <InputField
                   label="Nom complet"
@@ -380,7 +380,7 @@ const LoginScreen = ({navigation}) => {
                   style={styles.cguRow}
                   onPress={() => setAcceptCGU(!acceptCGU)}>
                   <View style={[styles.checkbox, acceptCGU && styles.checkboxActive]}>
-                    {acceptCGU && <Text style={styles.checkmark}>âœ“</Text>}
+                    {acceptCGU && <Text style={styles.checkmark}>✓</Text>}
                   </View>
                   <Text style={styles.cguText}>
                     {"J'accepte les "}
@@ -505,5 +505,6 @@ const styles = StyleSheet.create({
   cguLink: {color: COLORS.primary, fontWeight: '600'},
   errorText: {color: COLORS.error, fontSize: 12, marginBottom: 8},
 });
+
 
 export default LoginScreen;

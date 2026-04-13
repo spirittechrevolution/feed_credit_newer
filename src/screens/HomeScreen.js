@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  TextInput,
+  RefreshControl,
 } from 'react-native';
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -14,6 +16,7 @@ import {offers, subscriptions, notifications, categories, banner} from '../utils
 import OfferCard from '../components/OfferCard';
 import CategoryChip from '../components/CategoryChip';
 import Footer from '../components/Footer';
+import {useCart} from '../context/CartContext';
 
 /**
  * HomeScreen — écran principal avec header, bannière, catégories, offres et crédits récents
@@ -21,15 +24,29 @@ import Footer from '../components/Footer';
 const HomeScreen = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const [activeCategory, setActiveCategory] = useState(categories[0].id);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const {totalItems} = useCart();
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
-  const filteredOffers =
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1200);
+  }, []);
+
+  const baseOffers =
     activeCategory === 'all'
       ? offers
       : offers.filter(o => o.category === activeCategory);
 
-  // Crédits récents (2 premiers abonnements en cours)
+  const filteredOffers = searchQuery.trim()
+    ? baseOffers.filter(o =>
+        o.title.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : baseOffers;
+
+  // Credits recents (2 premiers abonnements en cours)
   const recentCredits = subscriptions.filter(s => s.status === 'en_cours').slice(0, 2);
 
   return (
@@ -42,19 +59,59 @@ const HomeScreen = ({navigation}) => {
           <Text style={styles.headerIcon}>☰</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>FeedCredit</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Notifications')}
-          style={styles.headerBtn}>
-          <Text style={styles.headerIcon}>🔔</Text>
-          {unreadCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{unreadCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Cart')}
+            style={styles.headerBtn}>
+            <Text style={styles.headerIcon}>🛒</Text>
+            {totalItems > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{totalItems}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Notifications')}
+            style={styles.headerBtn}>
+            <Text style={styles.headerIcon}>🔔</Text>
+            {unreadCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
+      {/* ——— BARRE DE RECHERCHE ——— */}
+      <View style={styles.searchBar}>
+        <Text style={styles.searchIcon}>🔍</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Rechercher une offre..."
+          placeholderTextColor={COLORS.grey}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          returnKeyType="search"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Text style={styles.searchClear}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.scroll}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }>
         {/* ——— BANNIÈRE PROMOTIONNELLE ——— */}
         <View style={styles.banner}>
           <Text style={styles.bannerEmoji}>{banner.emoji}</Text>
@@ -162,6 +219,35 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     letterSpacing: 0.5,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    marginHorizontal: 16,
+    marginVertical: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    elevation: 1,
+    shadowColor: COLORS.shadow,
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 1,
+    shadowRadius: 2,
+  },
+  searchIcon: {fontSize: 16, marginRight: 8},
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.text,
+    paddingVertical: 0,
+  },
+  searchClear: {fontSize: 16, color: COLORS.grey, paddingLeft: 8},
   badge: {
     position: 'absolute',
     top: 0,
