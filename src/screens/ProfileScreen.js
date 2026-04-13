@@ -2,6 +2,7 @@ import React from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
@@ -11,7 +12,7 @@ import {
 import COLORS from '../utils/colors';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {profileMenuItems} from '../utils/mockData';
-import {getUserProfile} from '../utils/api';
+import {getUserProfile, updateUserProfile, changePassword} from '../utils/api';
 import Footer from '../components/Footer';
 import {useAuth} from '../context/AuthContext';
 
@@ -24,6 +25,19 @@ const ProfileScreen = ({navigation}) => {
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
+  // Modale édition profil
+  const [showEditModal, setShowEditModal] = React.useState(false);
+  const [editName, setEditName] = React.useState('');
+  const [editEmail, setEditEmail] = React.useState('');
+  const [editPhone, setEditPhone] = React.useState('');
+  const [editLoading, setEditLoading] = React.useState(false);
+  const [editError, setEditError] = React.useState('');
+  // Modale changement mot de passe
+  const [showPwdModal, setShowPwdModal] = React.useState(false);
+  const [oldPwd, setOldPwd] = React.useState('');
+  const [newPwd, setNewPwd] = React.useState('');
+  const [pwdLoading, setPwdLoading] = React.useState(false);
+  const [pwdError, setPwdError] = React.useState('');
 
   React.useEffect(() => {
     if (!accessToken) return;
@@ -60,15 +74,8 @@ const ProfileScreen = ({navigation}) => {
   const handleMenuPress = item => {
     if (item.screen) {
       navigation.navigate(item.screen);
-      return;
     }
-    if (item.id === 'settings') {
-      navigation.navigate('Settings');
-    } else if (item.id === 'addresses') {
-      navigation.navigate('Addresses');
-    } else if (item.id === 'help') {
-      navigation.navigate('Help');
-    }
+    // ...other menu logic if needed
   };
 
   return (
@@ -76,7 +83,7 @@ const ProfileScreen = ({navigation}) => {
       <StatusBar backgroundColor={COLORS.primary} barStyle="light-content" />
 
       {/* Header rouge */}
-      <View style={[styles.profileHeader, {paddingTop: insets.top + 16}]}>
+      <View style={[styles.profileHeader, {paddingTop: insets.top + 16}]}> 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
@@ -92,7 +99,86 @@ const ProfileScreen = ({navigation}) => {
         <Text style={styles.memberSince}>Membre depuis {user && user.memberSince ? user.memberSince : ''}</Text>
       </View>
 
+      {/* MODALE ÉDITION PROFIL */}
+      {showEditModal && (
+        <View style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundColor:'rgba(0,0,0,0.4)',justifyContent:'center',alignItems:'center',zIndex:20}}>
+          <View style={{backgroundColor:'white',borderRadius:12,padding:24,width:'85%',maxWidth:350}}>
+            <Text style={{fontWeight:'bold',fontSize:18,marginBottom:12}}>Modifier le profil</Text>
+            <View style={{marginBottom:10}}>
+              <Text style={{fontSize:13,marginBottom:4}}>Nom</Text>
+              <TextInput value={editName} onChangeText={setEditName} style={{borderWidth:1,borderColor:'#ddd',borderRadius:8,padding:8}} placeholder="Nom complet" />
+            </View>
+            <View style={{marginBottom:10}}>
+              <Text style={{fontSize:13,marginBottom:4}}>Email</Text>
+              <TextInput value={editEmail} onChangeText={setEditEmail} style={{borderWidth:1,borderColor:'#ddd',borderRadius:8,padding:8}} placeholder="Email" keyboardType="email-address" />
+            </View>
+            <View style={{marginBottom:10}}>
+              <Text style={{fontSize:13,marginBottom:4}}>Téléphone</Text>
+              <TextInput value={editPhone} onChangeText={setEditPhone} style={{borderWidth:1,borderColor:'#ddd',borderRadius:8,padding:8}} placeholder="Téléphone" keyboardType="phone-pad" />
+            </View>
+            {editError ? <Text style={{color:'red',marginBottom:8}}>{editError}</Text> : null}
+            <View style={{flexDirection:'row',justifyContent:'flex-end',marginTop:10}}>
+              <TouchableOpacity onPress={()=>setShowEditModal(false)} style={{marginRight:16}}><Text style={{color:COLORS.grey}}>Annuler</Text></TouchableOpacity>
+              <TouchableOpacity onPress={async()=>{
+                setEditError('');
+                if(!editName||!editEmail||!editPhone){setEditError('Tous les champs sont requis');return;}
+                setEditLoading(true);
+                try{
+                  await updateUserProfile(accessToken,{name:editName,email:editEmail,phone:editPhone});
+                  setShowEditModal(false);
+                  setUser({...user,name:editName,email:editEmail,phone:editPhone});
+                }catch(e){setEditError(e.message);}finally{setEditLoading(false);}
+              }}>
+                <Text style={{color:COLORS.primary,fontWeight:'bold'}}>{editLoading?'...':'Enregistrer'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+      {/* MODALE CHANGEMENT MOT DE PASSE */}
+      {showPwdModal && (
+        <View style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundColor:'rgba(0,0,0,0.4)',justifyContent:'center',alignItems:'center',zIndex:20}}>
+          <View style={{backgroundColor:'white',borderRadius:12,padding:24,width:'85%',maxWidth:350}}>
+            <Text style={{fontWeight:'bold',fontSize:18,marginBottom:12}}>Changer le mot de passe</Text>
+            <View style={{marginBottom:10}}>
+              <Text style={{fontSize:13,marginBottom:4}}>Ancien mot de passe</Text>
+              <TextInput value={oldPwd} onChangeText={setOldPwd} style={{borderWidth:1,borderColor:'#ddd',borderRadius:8,padding:8}} placeholder="Ancien mot de passe" secureTextEntry />
+            </View>
+            <View style={{marginBottom:10}}>
+              <Text style={{fontSize:13,marginBottom:4}}>Nouveau mot de passe</Text>
+              <TextInput value={newPwd} onChangeText={setNewPwd} style={{borderWidth:1,borderColor:'#ddd',borderRadius:8,padding:8}} placeholder="Nouveau mot de passe" secureTextEntry />
+            </View>
+            {pwdError ? <Text style={{color:'red',marginBottom:8}}>{pwdError}</Text> : null}
+            <View style={{flexDirection:'row',justifyContent:'flex-end',marginTop:10}}>
+              <TouchableOpacity onPress={()=>setShowPwdModal(false)} style={{marginRight:16}}><Text style={{color:COLORS.grey}}>Annuler</Text></TouchableOpacity>
+              <TouchableOpacity onPress={async()=>{
+                setPwdError('');
+                if(!oldPwd||!newPwd){setPwdError('Tous les champs sont requis');return;}
+                setPwdLoading(true);
+                try{
+                  await changePassword(oldPwd,newPwd,accessToken);
+                  setShowPwdModal(false);
+                  setOldPwd('');setNewPwd('');
+                  Alert.alert('Succès','Mot de passe changé');
+                }catch(e){setPwdError(e.message);}finally{setPwdLoading(false);}
+              }}>
+                <Text style={{color:COLORS.primary,fontWeight:'bold'}}>{pwdLoading?'...':'Changer'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
+        {/* Boutons édition profil et mot de passe */}
+        <View style={{flexDirection:'row',justifyContent:'center',marginTop:18,marginBottom:6}}>
+          <TouchableOpacity style={{backgroundColor:COLORS.primary,padding:10,borderRadius:8,marginRight:10}} onPress={()=>{
+            setEditName(user?.name||'');setEditEmail(user?.email||'');setEditPhone(user?.phone||'');setShowEditModal(true);}}>
+            <Text style={{color:'white',fontWeight:'bold'}}>Modifier le profil</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{backgroundColor:COLORS.secondary,padding:10,borderRadius:8}} onPress={()=>{setShowPwdModal(true);}}>
+            <Text style={{color:'white',fontWeight:'bold'}}>Changer le mot de passe</Text>
+          </TouchableOpacity>
+        </View>
         {/* ——— Statistiques ——— */}
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
@@ -213,12 +299,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.primary,
+    borderRadius: 16,
     marginHorizontal: 16,
-    marginTop: 14,
-    borderRadius: 12,
+    marginTop: 16,
     padding: 16,
+    overflow: 'hidden',
   },
-  scoreLeft: {flex: 1},
+  scoreLeft: {
+    flex: 1,
+    minWidth: 0,
+  },
   scoreTitle: {color: COLORS.white, fontWeight: 'bold', fontSize: 15, marginBottom: 4},
   scoreSub: {color: 'rgba(255,255,255,0.85)', fontSize: 13},
   scoreCircle: {

@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
+import { forgotPassword, resetPassword } from '../utils/api';
 import {
   View,
   Text,
@@ -30,6 +31,13 @@ const LoginScreen = ({navigation}) => {
   const [tab, setTab] = useState('login');
 
   // Connexion
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState('');
+  const [forgotStep, setForgotStep] = useState(1); // 1: phone, 2: code+newpass
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotNewPass, setForgotNewPass] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState('');
   const [loginPhone, setLoginPhone] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginErrors, setLoginErrors] = useState({});
@@ -277,9 +285,106 @@ const LoginScreen = ({navigation}) => {
               secureTextEntry
               error={loginErrors.password}
             />
-            <TouchableOpacity style={styles.forgotBtn}>
-              <Text style={styles.forgotText}>Mot de passe oublie ?</Text>
+            <TouchableOpacity style={styles.forgotBtn} onPress={() => setShowForgotModal(true)}>
+              <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
             </TouchableOpacity>
+                  {/* MODAL Mot de passe oublié */}
+                  {showForgotModal && (
+                    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', zIndex: 10}}>
+                      <View style={{backgroundColor: 'white', borderRadius: 12, padding: 24, width: '85%', maxWidth: 350}}>
+                        <Text style={{fontWeight: 'bold', fontSize: 18, marginBottom: 12}}>Réinitialiser le mot de passe</Text>
+                        {forgotStep === 1 && (
+                          <>
+                            <InputField
+                              label="Numéro de téléphone"
+                              value={forgotPhone}
+                              onChangeText={setForgotPhone}
+                              placeholder="+221 XX XXX XX XX"
+                              keyboardType="phone-pad"
+                            />
+                            <ButtonPrimary
+                              title="Envoyer le code"
+                              loading={forgotLoading}
+                              onPress={async () => {
+                                setForgotError('');
+                                if (!forgotPhone || forgotPhone.length < 8) {
+                                  setForgotError('Numéro invalide');
+                                  return;
+                                }
+                                setForgotLoading(true);
+                                try {
+                                  await forgotPassword(forgotPhone);
+                                  setForgotStep(2);
+                                } catch (e) {
+                                  setForgotError(e.message);
+                                } finally {
+                                  setForgotLoading(false);
+                                }
+                              }}
+                              style={{marginTop: 12}}
+                            />
+                            {forgotError ? <Text style={{color: 'red', marginTop: 8}}>{forgotError}</Text> : null}
+                          </>
+                        )}
+                        {forgotStep === 2 && (
+                          <>
+                            <InputField
+                              label="Code reçu par SMS"
+                              value={forgotOtp}
+                              onChangeText={setForgotOtp}
+                              placeholder="Code OTP"
+                              keyboardType="number-pad"
+                              maxLength={6}
+                            />
+                            <InputField
+                              label="Nouveau mot de passe"
+                              value={forgotNewPass}
+                              onChangeText={setForgotNewPass}
+                              placeholder="Nouveau mot de passe"
+                              secureTextEntry
+                            />
+                            <ButtonPrimary
+                              title="Réinitialiser"
+                              loading={forgotLoading}
+                              onPress={async () => {
+                                setForgotError('');
+                                if (!forgotOtp || forgotOtp.length < 4) {
+                                  setForgotError('Code OTP requis');
+                                  return;
+                                }
+                                if (!forgotNewPass || forgotNewPass.length < 6) {
+                                  setForgotError('Mot de passe trop court');
+                                  return;
+                                }
+                                setForgotLoading(true);
+                                try {
+                                  await resetPassword(forgotPhone, forgotOtp, forgotNewPass);
+                                  setShowForgotModal(false);
+                                  setForgotStep(1);
+                                  setForgotPhone('');
+                                  setForgotOtp('');
+                                  setForgotNewPass('');
+                                  Alert.alert('Succès', 'Mot de passe réinitialisé. Connectez-vous avec le nouveau mot de passe.');
+                                } catch (e) {
+                                  setForgotError(e.message);
+                                } finally {
+                                  setForgotLoading(false);
+                                }
+                              }}
+                              style={{marginTop: 12}}
+                            />
+                            <TouchableOpacity onPress={() => setForgotStep(1)} style={{marginTop: 10}}>
+                              <Text style={{color: COLORS.primary}}>Retour</Text>
+                            </TouchableOpacity>
+                            {forgotError ? <Text style={{color: 'red', marginTop: 8}}>{forgotError}</Text> : null}
+                          </>
+                        )}
+                        <TouchableOpacity onPress={() => { setShowForgotModal(false); setForgotStep(1); setForgotPhone(''); setForgotOtp(''); setForgotNewPass(''); setForgotError(''); }} style={{marginTop: 18, alignSelf: 'center'}}>
+                          <Text style={{color: COLORS.grey}}>Annuler</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
             <ButtonPrimary
               title="SE CONNECTER"
               onPress={handleLogin}
