@@ -26,6 +26,39 @@ export const AuthProvider = ({children}) => {
     });
   };
 
+  // Envoi OTP pour inscription (mock — simule l'appel backend)
+  const sendRegistrationOTP = async phone => {
+    setIsLoading(true);
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        setIsLoading(false);
+        if (phone && phone.length >= 8) {
+          setOtpPhone(phone);
+          // En production : appel API POST /auth/send-otp {phone}
+          resolve({success: true});
+        } else {
+          reject(new Error('Numéro de téléphone invalide'));
+        }
+      }, 1000);
+    });
+  };
+
+  // Vérification OTP inscription (mock — le vrai OTP sera 123456 en démo)
+  const verifyRegistrationOTP = async (phone, code) => {
+    setIsLoading(true);
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        setIsLoading(false);
+        // En production : appel API POST /auth/verify-otp {phone, code}
+        if (code === '123456' || code.length === 6) {
+          resolve({success: true});
+        } else {
+          reject(new Error('Code OTP invalide ou expiré'));
+        }
+      }, 1000);
+    });
+  };
+
   // Inscription simulée
   const register = async (name, phone, email, password) => {
     setIsLoading(true);
@@ -74,6 +107,8 @@ export const AuthProvider = ({children}) => {
         isLoading,
         otpPhone,
         login,
+        sendRegistrationOTP,
+        verifyRegistrationOTP,
         register,
         verifyOTP,
         logout,
